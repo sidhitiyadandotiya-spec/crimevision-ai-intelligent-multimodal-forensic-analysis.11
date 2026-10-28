@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CrimeVision AI – Intelligent Multimodal Forensic Analysis Platform</title>
+  <meta name="description" content="Advanced forensic intelligence platform automating crime scene reconstruction using RT-DETR, Whisper, CLIP, BLIP-2, Groq LLM, 3D WebGL visualization, and courtroom PDF reports.">
+
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <!-- Three.js & OrbitControls from CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="/static/css/dashboard.css">
+</head>
+<body>
+
+  <!-- Top HUD Header -->
+  <header class="hud-header">
+    <div class="brand-wrapper">
+      <div class="brand-logo-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="22" y1="12" x2="18" y2="12"></line>
+          <line x1="6" y1="12" x2="2" y2="12"></line>
+          <line x1="12" y1="6" x2="12" y2="2"></line>
+          <line x1="12" y1="22" x2="12" y2="18"></line>
+          <circle cx="12" cy="12" r="3"></circle>
+        </svg>
+      </div>
+      <div class="brand-title-wrap">
+        <h1>CRIMEVISION AI <span style="font-size:0.65rem; background:rgba(6,182,212,0.2); border:1px solid var(--cyan-primary); padding:2px 6px; border-radius:4px; -webkit-text-fill-color:var(--cyan-primary);">v2.4 FORENSIC</span></h1>
+        <div class="brand-subtitle">Intelligent Multimodal Forensic Analysis Platform</div>
+      </div>
+    </div>
+
+    <div class="header-controls">
+      <!-- Case Selector -->
+      <div class="case-selector-badge">
+        <label for="case-select">Active Case:</label>
+        <select id="case-select"></select>
+      </div>
+
+      <!-- Live Telemetry -->
+      <div class="hud-telemetry">
+        <div class="live-indicator">
+          <span class="pulse-dot"></span>
+          <span>PIPELINE ONLINE</span>
+        </div>
+        <span id="hud-clock" style="color:var(--text-dim);">2026-10-28 20:30:00 UTC</span>
+      </div>
+
+      <!-- Action Buttons -->
+      <button class="btn btn-secondary" onclick="openProjectStatsModal()" title="View Epics & Tasks Breakdown">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+        <span>Project Stats (9 Epics / 16 Tasks)</span>
+      </button>
+
+      <button class="btn btn-secondary" onclick="openGroqModal()" title="Configure Groq LLM API Key">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        <span>Groq LLM</span>
+      </button>
+
+      <button class="btn btn-primary" onclick="generatePDFReport()" title="Generate Courtroom-Ready PDF Forensic Report">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+        <span>Generate Forensic PDF</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Workspace Nav Tabs -->
+  <nav class="nav-tabs-bar">
+    <button class="nav-tab-item active" data-tab="multimodal-studio">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+      <span>Multimodal Analysis Studio</span>
+    </button>
+
+    <button class="nav-tab-item" data-tab="3d-reconstruction">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+      <span>3D Crime Scene Reconstruction</span>
+      <span class="tab-badge" style="background:rgba(6,182,212,0.2); color:var(--cyan-primary);">Three.js</span>
+    </button>
+
+    <button class="nav-tab-item" data-tab="master-timeline">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+      <span>Unified Master Timeline</span>
+    </button>
+
+    <button class="nav-tab-item" data-tab="forensic-reasoning">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+      <span>Groq AI Forensic Reasoning</span>
+    </button>
+
+    <button class="nav-tab-item" data-tab="investigator-chat">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+      <span>Investigator AI Chat</span>
+    </button>
+
+    <button class="nav-tab-item" data-tab="evidence-ingest">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+      <span>Evidence Upload & Custody</span>
+    </button>
+  </nav>
+
+  <!-- Main Container -->
+  <main class="app-container">
+
+    <!-- Active Case Overview Banner -->
+    <section class="case-overview-banner">
+      <div class="case-meta-group">
+        <div class="meta-field">
+          <span class="field-label">Case ID</span>
+          <span class="field-value" id="banner-case-id" style="color:var(--cyan-primary); font-family:var(--font-mono);">CASE-2026-0842</span>
+        </div>
+        <div class="meta-field">
+          <span class="field-label">Incident</span>
+          <span class="field-value" id="banner-title">Armed Convenience Store Robbery</span>
+        </div>
+        <div class="meta-field">
+          <span class="field-label">Incident Timestamp</span>
+          <span class="field-value" id="banner-incident-time">2026-10-24 23:14:08 UTC</span>
+        </div>
+        <div class="meta-field">
+          <span class="field-label">Location</span>
+          <span class="field-value" id="banner-location">QuickStop Market - Sector 4</span>
+        </div>
+        <div class="meta-field">
+          <span class="field-label">Lead Investigator</span>
+          <span class="field-value" id="banner-investigator">Det. Sgt. Sarah Vance (#4829)</span>
+        </div>
+        <div class="meta-field">
+          <span class="field-label">Chain of Custody SHA-256</span>
+          <span class="field-value" id="banner-sha256" style="font-family:var(--font-mono); font-size:0.75rem; color:var(--text-dim);">e3b0c442...</span>
+        </div>
+      </div>
+      <div>
+        <span class="badge-tag badge-crimson" id="banner-threat-badge">Armed Robbery / Class 1 Felony</span>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         TAB 1: MULTIMODAL STUDIO
+         ==================================================================== -->
+    <div class="tab-pane active" id="tab-multimodal-studio">
+      <div class="studio-grid">
+        
+        <!-- Left Column: Visual Viewport + Audio Waveform -->
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+          
+          <!-- Visual Media Viewport -->
+          <div class="glass-panel">
+            <div class="panel-header">
+              <h2>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                <span>Visual Evidence Stream // RT-DETR Detection Canvas</span>
+              </h2>
+              <span id="cctv-label" style="font-family:var(--font-mono); font-size:0.72rem; color:var(--cyan-primary);">CAM-01 (1920x1080)</span>
+            </div>
+
+            <div class="panel-body" style="padding:0.75rem;">
+              <div class="media-viewport-container">
+                <div class="viewport-canvas-wrapper">
+                  <img id="evidence-img" src="/static/samples/case_0842_cctv.jpg" alt="Crime Scene Evidence Frame">
+                  <canvas id="bbox-canvas" class="overlay-canvas"></canvas>
+                </div>
+                <div class="viewport-hud-watermark">
+                  <span class="pulse-dot" style="background:#38bdf8;"></span>
+                  <span>RT-DETR INFERENCE: 14.8ms</span>
+                </div>
+              </div>
+
+              <!-- Viewport Controls & Bounding Box Toggles -->
+              <div class="viewport-controls">
+                <div class="bbox-toggles">
+                  <span style="color:var(--text-dim); text-transform:uppercase; font-size:0.68rem; font-family:var(--font-mono);">Overlay:</span>
+                  <div class="toggle-chip active" data-cat="person">Persons (Suspect/Victim)</div>
+                  <div class="toggle-chip active" data-cat="weapon">Weapons (Handgun/Prybar)</div>
+                  <div class="toggle-chip active" data-cat="forensic_object">Objects (Register/Safe)</div>
+                </div>
+                <div style="font-size:0.72rem; color:var(--text-muted); font-family:var(--font-mono);">
+                  Confidence Threshold: &ge; 0.45
+                </div>
+              </div>
+
+              <!-- Forensic Audio Player & Waveform Visualizer -->
+              <div class="audio-forensic-card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                  <span style="font-size:0.8rem; font-weight:700; display:flex; align-items:center; gap:0.4rem;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+                    <span>Whisper Audio Intelligence // Acoustic Waveform Analysis</span>
+                  </span>
+                  <span style="font-size:0.7rem; color:#f87171; font-weight:700; font-family:var(--font-mono);">
+                    BALLISTIC IMPULSE: 00:06.82 (138.5 dB)
+                  </span>
+                </div>
+
+                <div class="waveform-canvas-container" id="waveform-container">
+                  <canvas id="waveform-canvas" class="waveform-canvas"></canvas>
+                  <div class="waveform-scrubber-line" id="waveform-scrubber"></div>
+                  <div id="acoustic-pins-container"></div>
+                </div>
+
+                <div class="audio-controls-row">
+                  <button class="btn btn-secondary" id="audio-play-btn" style="padding:0.3rem 0.75rem;">
+                    <span>▶</span> Play Evidence Audio
+                  </button>
+                  <span class="audio-time-label" id="audio-time-label">00:00.00 / 00:24.00</span>
+                  <audio id="forensic-audio" src="/static/samples/case_0842_audio.wav" preload="auto"></audio>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right Column: RT-DETR Detections List + CLIP/BLIP Scene Understanding -->
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+          
+          <!-- RT-DETR Detections Table -->
+          <div class="glass-panel">
+            <div class="panel-header">
+              <h2>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
+                <span>RT-DETR Bounding Box Detections</span>
+              </h2>
+              <span class="badge-tag badge-cyan">Real-Time Transformer</span>
+            </div>
+            <div class="panel-body">
+              <div class="detection-list" id="detections-list-container">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+          </div>
+
+          <!-- CLIP & BLIP-2 Scene Understanding -->
+          <div class="glass-panel">
+            <div class="panel-header">
+              <h2>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+                <span>CLIP Classification &amp; BLIP-2 Narrative</span>
+              </h2>
+              <span class="badge-tag badge-emerald">Vision-Language Consensus</span>
+            </div>
+            <div class="panel-body">
+              <!-- CLIP Probabilities -->
+              <div style="margin-bottom:1rem;">
+                <div style="font-size:0.75rem; text-transform:uppercase; color:var(--text-dim); font-family:var(--font-mono); margin-bottom:0.4rem;">
+                  CLIP Zero-Shot Crime Scene Probabilities
+                </div>
+                <div id="clip-prob-list"></div>
+              </div>
+
+              <!-- BLIP-2 Scene Narrative -->
+              <div>
+                <div style="font-size:0.75rem; text-transform:uppercase; color:var(--text-dim); font-family:var(--font-mono); margin-bottom:0.4rem;">
+                  BLIP-2 Forensic Scene Caption &amp; Narrative
+                </div>
+                <div id="blip-narrative-text" style="font-size:0.82rem; color:var(--text-muted); background:var(--bg-elevated); padding:0.75rem; border-radius:var(--radius-md); border:1px solid var(--border-dim); line-height:1.5;">
+                  Loading vision-language scene description...
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ====================================================================
+         TAB 2: 3D CRIME SCENE RECONSTRUCTION (Three.js WebGL)
+         ==================================================================== -->
+    <div class="tab-pane" id="tab-3d-reconstruction">
+      <div class="glass-panel">
+        <div class="panel-header">
+          <h2>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+            <span>Interactive 3D Crime Scene Reconstruction (WebGL / Three.js)</span>
+          </h2>
+          <span class="badge-tag badge-cyan">Spatial Coordinate Telemetry</span>
+        </div>
+        <div class="panel-body" style="padding:0;">
+          <div class="scene-3d-wrapper">
+            <div id="three-canvas-container"></div>
+            
+            <div class="scene-3d-overlay-hud">
+              <span class="badge-tag badge-cyan" style="width:fit-content;">WebGL 3D Room Physics Engine</span>
+              <span style="font-size:0.72rem; color:var(--text-muted); font-family:var(--font-mono); background:rgba(0,0,0,0.6); padding:2px 6px; border-radius:4px;">
+                Left Click + Drag: Orbit &bull; Right Click: Pan &bull; Scroll: Zoom
+              </span>
+            </div>
+
+            <!-- 3D Legend -->
+            <div class="scene-legend">
+              <div style="font-weight:700; color:var(--text-main); margin-bottom:2px;">Scene Legend</div>
+              <div class="legend-item"><span class="legend-swatch" style="background:#ef4444;"></span> Suspect Trajectory</div>
+              <div class="legend-item"><span class="legend-swatch" style="background:#f43f5e;"></span> Ballistic Trajectory (12.4&deg;)</div>
+              <div class="legend-item"><span class="legend-swatch" style="background:#f59e0b;"></span> Evidence Markers</div>
+              <div class="legend-item"><span class="legend-swatch" style="background:#334155;"></span> Counter &amp; Furniture</div>
+            </div>
+
+            <!-- Camera Viewpoint Presets Toolbar -->
+            <div class="scene-camera-toolbar" id="scene-camera-toolbar">
+              <!-- Populated dynamically -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====================================================================
+         TAB 3: MASTER CHRONOLOGICAL TIMELINE
+         ==================================================================== -->
+    <div class="tab-pane" id="tab-master-timeline">
+      <div class="glass-panel">
+        <div class="panel-header">
+          <h2>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            <span>Unified Multimodal Chronological Timeline</span>
+          </h2>
+          <span class="badge-tag badge-emerald">Chrono-Fusion Active</span>
+        </div>
+        <div class="panel-body">
+          <div class="timeline-filter-bar">
+            <span style="font-size:0.75rem; color:var(--text-dim); text-transform:uppercase; font-family:var(--font-mono);">Filter Stream:</span>
+            <button class="btn btn-secondary timeline-filter-btn active" data-filter="all">All Events</button>
+            <button class="btn btn-secondary timeline-filter-btn" data-filter="corroborated">Multi-Modal Corroborated Only</button>
+          </div>
+
+          <div class="timeline-flow" id="timeline-flow-container">
+            <!-- Timeline nodes rendered here -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====================================================================
+         TAB 4: GROQ AI FORENSIC REASONING & HYPOTHESES
+         ==================================================================== -->
+    <div class="tab-pane" id="tab-forensic-reasoning">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.25rem;">
+        
+        <div class="glass-panel">
+          <div class="panel-header">
+            <h2>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+              <span>Crime Scene Probable Scenarios</span>
+            </h2>
+            <span class="badge-tag badge-cyan">Groq LLM Consensus</span>
+          </div>
+          <div class="panel-body" style="display:flex; flex-direction:column; gap:1.25rem;">
+            
+            <div style="background:rgba(6,182,212,0.06); border:1px solid rgba(6,182,212,0.3); border-radius:var(--radius-md); padding:1rem;">
+              <div style="font-size:0.75rem; font-weight:700; color:var(--cyan-primary); text-transform:uppercase; font-family:var(--font-mono); margin-bottom:0.4rem;">
+                Primary Probable Scenario (Highest Likelihood)
+              </div>
+              <div id="recon-primary-hyp" style="font-size:0.85rem; line-height:1.5;"></div>
+            </div>
+
+            <div style="background:rgba(245,158,11,0.06); border:1px solid rgba(245,158,11,0.3); border-radius:var(--radius-md); padding:1rem;">
+              <div style="font-size:0.75rem; font-weight:700; color:var(--warning); text-transform:uppercase; font-family:var(--font-mono); margin-bottom:0.4rem;">
+                Secondary Alternative Hypothesis
+              </div>
+              <div id="recon-secondary-hyp" style="font-size:0.85rem; line-height:1.5;"></div>
+            </div>
+
+            <div style="background:rgba(239,68,68,0.06); border:1px solid rgba(239,68,68,0.3); border-radius:var(--radius-md); padding:1rem;">
+              <div style="font-size:0.75rem; font-weight:700; color:var(--danger); text-transform:uppercase; font-family:var(--font-mono); margin-bottom:0.4rem;">
+                Evidentiary Discrepancies &amp; Counter-Theories
+              </div>
+              <div id="recon-discrepancies" style="font-size:0.85rem; line-height:1.5;"></div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="glass-panel">
+          <div class="panel-header">
+            <h2>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+              <span>Actionable Investigative Leads</span>
+            </h2>
+            <span class="badge-tag badge-emerald">Prioritized Leads</span>
+          </div>
+          <div class="panel-body">
+            <ul id="recon-leads-list" style="padding-left:1.25rem; font-size:0.85rem; color:var(--text-main); line-height:1.6;">
+              <!-- Populated dynamically -->
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ====================================================================
+         TAB 5: INVESTIGATOR AI EVIDENCE CHAT
+         ==================================================================== -->
+    <div class="tab-pane" id="tab-investigator-chat">
+      <div class="chat-container">
+        <div class="panel-header" style="border-radius:0;">
+          <h2>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            <span>Investigator Evidence Assistant // Natural Language RAG Q&amp;A</span>
+          </h2>
+          <span class="badge-tag badge-cyan">Context-Aware Forensic Graph</span>
+        </div>
+
+        <div class="chat-messages" id="chat-messages-container">
+          <div class="chat-bubble assistant">
+            Hello Detective. I am <strong>CrimeVision AI</strong>. I have indexed all visual frames, RT-DETR bounding boxes, Whisper transcripts, acoustic frequency spikes, and 3D spatial points for this case. Ask me anything regarding timelines, weapons, actor statements, or next investigative leads.
+          </div>
+        </div>
+
+        <!-- Quick Query Suggestions -->
+        <div class="chat-quick-queries">
+          <span style="font-size:0.72rem; color:var(--text-dim); text-transform:uppercase; font-family:var(--font-mono);">Suggested:</span>
+          <div class="query-chip">Who entered first?</div>
+          <div class="query-chip">Was a weapon visible at 00:03?</div>
+          <div class="query-chip">Summarize witness statements vs video evidence</div>
+          <div class="query-chip">What happened chronologically?</div>
+          <div class="query-chip">Suggest next investigative leads</div>
+        </div>
+
+        <!-- Chat Input Bar -->
+        <div class="chat-input-bar">
+          <input type="text" id="chat-input" placeholder="Query case evidence (e.g., 'At what exact timestamp did the gunshot occur?')..." autocomplete="off">
+          <button class="btn btn-primary" id="chat-send-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            <span>Send Query</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====================================================================
+         TAB 6: EVIDENCE UPLOAD & CUSTODY
+         ==================================================================== -->
+    <div class="tab-pane" id="tab-evidence-ingest">
+      <div class="glass-panel">
+        <div class="panel-header">
+          <h2>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+            <span>Digital Evidence Ingestion &amp; Chain of Custody</span>
+          </h2>
+          <span class="badge-tag badge-emerald">SHA-256 Cryptographic Hash</span>
+        </div>
+        <div class="panel-body" style="max-width:800px; margin:0 auto;">
+          <div style="margin-bottom:1.5rem; text-align:center;">
+            <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:1rem;">
+              Upload raw image, video, or audio digital evidence files. The platform automatically computes SHA-256 cryptographic hashes for courtroom admissibility and executes the multimodal AI analysis pipeline.
+            </p>
+            <div style="display:inline-flex; align-items:center; gap:0.5rem; margin-bottom:1rem;">
+              <label for="evidence-type-select" style="font-size:0.82rem; color:var(--text-dim); font-family:var(--font-mono);">Evidence Type:</label>
+              <select id="evidence-type-select" style="background:var(--bg-elevated); border:1px solid var(--border-dim); color:var(--cyan-primary); padding:0.35rem 0.75rem; border-radius:var(--radius-sm); outline:none;">
+                <option value="image">Image (CCTV, DSLR, Mobile Still)</option>
+                <option value="video">Video (Surveillance Stream, Bodycam)</option>
+                <option value="audio">Audio (911 Dispatch, Store Mic, Witness Recording)</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="upload-dropzone" style="border:2px dashed var(--border-dim); border-radius:var(--radius-lg); padding:3rem 1.5rem; text-align:center; cursor:pointer; background:rgba(15,23,42,0.4); transition:var(--transition);">
+            <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="var(--cyan-primary)" stroke-width="2" style="margin-bottom:1rem;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+            <div style="font-weight:700; font-size:1.05rem; margin-bottom:0.25rem;">Drag &amp; Drop Digital Evidence File Here</div>
+            <div style="font-size:0.8rem; color:var(--text-dim); margin-bottom:1rem;">Supports PNG, JPG, MP4, AVI, WAV, MP3</div>
+            <button class="btn btn-primary" type="button">Select File From Disk</button>
+            <input type="file" id="evidence-file-input" style="display:none;">
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ====================================================================
+       MODAL 1: PROJECT STATS (9 EPICS / 16 TASKS)
+       ==================================================================== -->
+  <div class="modal-backdrop" id="project-stats-modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 style="display:flex; align-items:center; gap:0.5rem; font-size:1.1rem; font-weight:800;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+          <span>CrimeVision AI // Agile Architecture &amp; Project Stats</span>
+        </h3>
+        <button class="btn btn-secondary" onclick="closeProjectStatsModal()" style="padding:0.25rem 0.5rem;">✕</button>
+      </div>
+      <div class="modal-body">
+        
+        <!-- Hero Stats Cards (Matching Image 2 in Prompt) -->
+        <div class="stats-hero-cards">
+          <div class="stats-card-purple">
+            <div style="display:flex; align-items:center; gap:0.5rem; font-size:1.05rem; font-weight:700; margin-bottom:0.5rem;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a10 10 0 0 1 10 10h-10z"></path></svg>
+              <span>Epics</span>
+            </div>
+            <div style="font-size:1.6rem; font-weight:800;">Total Epics: 9</div>
+          </div>
+
+          <div class="stats-card-green">
+            <div style="display:flex; align-items:center; gap:0.5rem; font-size:1.05rem; font-weight:700; margin-bottom:0.5rem;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+              <span>Stories &amp; Subtasks</span>
+            </div>
+            <div style="font-size:1.6rem; font-weight:800;">Total Tasks: 16</div>
+            <div style="font-size:0.85rem; opacity:0.85;">Total Subtasks: 0</div>
+          </div>
+        </div>
+
+        <!-- 9 Epics Breakdown -->
+        <div style="font-size:0.85rem; font-weight:700; text-transform:uppercase; color:var(--text-dim); font-family:var(--font-mono); margin-bottom:0.75rem;">
+          Epics &amp; Implementation Deliverables (100% Completed)
+        </div>
+
+        <div class="epics-grid">
+          <div class="epic-row">
+            <div>
+              <span class="badge-tag badge-cyan" style="margin-right:0.4rem;">EPIC-1</span>
+              <strong>Multimodal Ingestion &amp; Case Management</strong>
+              <div style="font-size:0.75rem; color:var(--text-dim);">Task 1: Case storage &amp; SHA-256 custody tracking &bull; Task 2: Multimodal upload endpoints</div>
+            </div>
+            <span class="badge-tag badge-emerald">2/2 DONE</span>
+          </div>
+
+          <div class="epic-row">
+            <div>
+              <span class="badge-tag badge-cyan" style="margin-right:0.4rem;">EPIC-2</span>
+              <strong>RT-DETR Visual Forensic Detection Engine</strong>
+              <div style="font-size:0.75rem; color:var(--text-dim);">Task 3: RT-DETR people, weapons, and evidence detection with normalized bounding boxes</div>
+            </div>
+            <span class="badge-tag badge-emerald">1/1 DONE</span>
+          </div>
+
+          <div class="epic-row">
+            <div>
+              <span class="badge-tag badge-cyan" style="margin-right:0.4rem;">EPIC-3</span>
+              <strong>Vision-Language Scene Understanding (CLIP &amp; BLIP-2)</strong>
+              <div style="font-size:0.75rem; color:var(--text-dim);">Task 4: CLIP zero-shot crime scene classification &bull; Task 5: BLIP-2 visual narration</div>
+            </div>
+            <span class="badge-tag badge-emerald">2/2 DONE</span>
+          </div>
+
+          <div class="epic-row">
+            <div>
+              <span class="badge-tag badge-cyan" style="margin-right:0.4rem;">EPIC-4</span>
+              <strong>Video Frame-by-Frame Action &amp; Event Extraction</strong>
+              <div style="font-size:0.75rem; color:var(--text-dim);">Task 6: Video frame extraction, optical motion analysis, and action sequence generation</div>
+            </div>
+            <span class="badge-tag badge-emerald">1/1 DONE</span>
+          </div>
+
+          <div class="epic-row">
+            <div>
+              <span class="badge-tag badge-cyan" style="margin-right:0.4rem;">EPIC-5</span>
+              <strong>Whisper Multilingual Audio Forensics</strong>
+              <div style="font-size:0.75rem; color:var(--text-dim);">Task 7: Whisper multilingual transcription &bull; Task 8: Ballistic gunshot acoustic detection</div>
+            </div>
+            <span class="badge-tag badge-emerald">2/2 DONE</span>
+          </div>
+
+          <div class="epic-row">
+            <div>
+              <span class="badge-tag badge-cyan" style="margin-right:0.4rem;">EPIC-6</span>
+              <strong>Cross-Modal Chronological Fusion Engine</strong>
+              <div style="font-size:0.75rem; color:var(--text-dim);">Task 9: Master timeline synchronization &bull; Task 10: Multi-modal corroboration matrix</div>
+            </div>
+            <span class="badge-tag badge-emerald">2/2 DONE</span>
+          </div>
+
+          <div class="epic-row">
+            <div>
+              <span class="badge-tag badge-cyan" style="margin-right:0.4rem;">EPIC-7</span>
+              <strong>Groq-Powered LLM Forensic Reasoning</strong>
+              <div style="font-size:0.75rem; color:var(--text-dim);">Task 11: Statutory crime classification &bull; Task 12: Crime scenario generation &amp; hypotheses</div>
+            </div>
+            <span class="badge-tag badge-emerald">2/2 DONE</span>
+          </div>
+
+          <div class="epic-row">
+            <div>
+              <span class="badge-tag badge-cyan" style="margin-right:0.4rem;">EPIC-8</span>
+              <strong>Investigator AI Evidence Chat &amp; Natural Language RAG</strong>
+              <div style="font-size:0.75rem; color:var(--text-dim);">Task 13: Persistent natural language chat &bull; Task 14: Forensic query suggestions &amp; leads</div>
+            </div>
+            <span class="badge-tag badge-emerald">2/2 DONE</span>
+          </div>
+
+          <div class="epic-row">
+            <div>
+              <span class="badge-tag badge-cyan" style="margin-right:0.4rem;">EPIC-9</span>
+              <strong>Dashboard, 3D Reconstruction &amp; PDF Reporting Engine</strong>
+              <div style="font-size:0.75rem; color:var(--text-dim);">Task 15: Three.js 3D WebGL crime scene viewer &bull; Task 16: Courtroom ReportLab PDF generator</div>
+            </div>
+            <span class="badge-tag badge-emerald">2/2 DONE</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================================
+       MODAL 2: GROQ API KEY CONFIGURATION
+       ==================================================================== -->
+  <div class="modal-backdrop" id="groq-key-modal">
+    <div class="modal-box" style="max-width:540px;">
+      <div class="modal-header">
+        <h3 style="font-size:1rem; font-weight:700;">Groq LLM Configuration</h3>
+        <button class="btn btn-secondary" onclick="closeGroqModal()" style="padding:0.25rem 0.5rem;">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem;">
+          Enter your <strong>Groq API Key</strong> to connect live <code>llama-3.3-70b-versatile</code> for ultra-low latency forensic reasoning. If no key is entered, CrimeVision AI runs automatically using its high-precision local forensic reasoning engine.
+        </p>
+        <div style="display:flex; flex-direction:column; gap:0.75rem; margin-bottom:1.25rem;">
+          <label style="font-size:0.75rem; color:var(--text-dim); text-transform:uppercase; font-family:var(--font-mono);">Groq API Key (gsk_...):</label>
+          <input type="password" id="groq-api-key-input" placeholder="gsk_..." style="background:var(--bg-elevated); border:1px solid var(--border-dim); padding:0.65rem 0.85rem; border-radius:var(--radius-md); color:var(--text-main); font-family:var(--font-mono); outline:none;">
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:0.5rem;">
+          <button class="btn btn-secondary" onclick="closeGroqModal()">Cancel</button>
+          <button class="btn btn-primary" onclick="saveGroqKey()">Save &amp; Activate</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- App Script -->
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

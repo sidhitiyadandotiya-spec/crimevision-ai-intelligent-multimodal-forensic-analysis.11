@@ -1,0 +1,73 @@
+{
+  "case_id": "CASE-2026-0842",
+  "title": "Armed Convenience Store Robbery & Weapon Discharge",
+  "incident_type": "Armed Robbery / Aggravated Assault",
+  "incident_date": "2026-10-24 23:14:08 UTC",
+  "location": "QuickStop Market - 1442 Metro Blvd, Sector 4",
+  "jurisdiction": "Metropolitan Police Dept - Major Crimes Division",
+  "lead_investigator": "Detective Sergeant Sarah Vance (Badge #4829)",
+  "status": "Active Forensics Analysis",
+  "created_at": "2026-10-25 00:30:00 UTC",
+  "sha256_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "chain_of_custody": [
+    {
+      "timestamp": "2026-10-24 23:35:10",
+      "handler": "Officer J. Miller",
+      "action": "Evidence seized from store DVR"
+    },
+    {
+      "timestamp": "2026-10-25 00:15:22",
+      "handler": "Forensic Specialist D. Hall",
+      "action": "Digital evidence ingested into CrimeVision AI"
+    },
+    {
+      "timestamp": "2026-10-25 00:30:00",
+      "handler": "CrimeVision AI System",
+      "action": "Multimodal forensic pipeline executed"
+    }
+  ],
+  "evidence": [
+    {
+      "evidence_id": "EVID-0842-IMG-01",
+      "type": "image",
+      "label": "CCTV Camera 01 (Overhead Checkout View)",
+      "file_path": "/static/samples/case_0842_cctv.jpg",
+      "timestamp": "23:14:08",
+      "file_size_kb": 895,
+      "sha256": "4a7d60f2bb9d34e6c1e92d73f4e24018274a4cf79d869273c884fbf32d43ea81"
+    },
+    {
+      "evidence_id": "EVID-0842-AUD-01",
+      "type": "audio",
+      "label": "Store Microphone Audio & Witness Dispatch Recording",
+      "file_path": "/static/samples/case_0842_audio.wav",
+      "timestamp": "23:14:00 - 23:14:24",
+      "file_size_kb": 1033,
+      "duration_sec": 24.0,
+      "sha256": "9b12f6c91a382103f7bc2245e89643120ae89cd4f18392173b092284cf01ea92"
+    },
+    {
+      "evidence_id": "EVID-0842-VID-01",
+      "type": "video",
+      "label": "CCTV Primary Surveillance Stream (24 fps)",
+      "file_path": "/static/samples/case_0842_cctv.jpg",
+      "timestamp": "23:14:00 - 23:14:24",
+      "file_size_kb": 4200,
+      "duration_sec": 24.0,
+      "fps": 24,
+      "sha256": "7c23a54d309be041e1248a31e1f579c29801fa498327cbdae2014ff98231c944"
+    }
+  ],
+  "crime_classification": {
+    "primary_category": "Armed Robbery (Class 1 Felony)",
+    "penal_code": "State Penal Code \u00a7 211 / \u00a7 12022.53 (Personal Discharge of Firearm)",
+    "confidence": 0.982,
+    "threat_level": "CRITICAL_VIOLENT",
+    "recommended_charges": [
+      "Aggravated Robbery with Deadly Weapon",
+      "Assault with a Deadly Weapon (ADW)",
+      "Discharge of Firearm in Commission of a Felony",
+      "Commercial Burglary"
+    ]
+  }
+}
